@@ -1,0 +1,37 @@
+kernel:
+  image: "linuxkit/kernel-fedora:4.10.12-200.fc25"
+  cmdline: "console=ttyS0 console=tty0 page_poison=1"
+init:
+  - linuxkit/init:cbd7ae748f0a082516501a3e914fa0c924ee941e
+  - linuxkit/runc:24dfe632ed3ff53a026ee3fac046fd544434e2d6
+  - linuxkit/containerd:f1130450206d4f64f0ddc13d15bb68435aa1ff61
+  - linuxkit/ca-certificates:4e9a83e890e6477dcd25029fc4f1ced61d0642f4
+onboot:
+  - name: sysctl
+    image: "linuxkit/sysctl:225c52c2d6f04a040663bac84cabf81825027f64"
+  - name: binfmt
+    image: "linuxkit/binfmt:603e5f064b3e8a64088c0fcf7a80d2783541ee1d"
+services:
+  - name: rngd
+    image: "linuxkit/rngd:69f951ce2a3a9534dbbc7ba8119e1df4391f06c0"
+  - name: nginx
+    image: "nginx:alpine"
+    capabilities:
+     - CAP_NET_BIND_SERVICE
+     - CAP_CHOWN
+     - CAP_SETUID
+     - CAP_SETGID
+     - CAP_DAC_OVERRIDE
+    net: host
+files:
+  - path: etc/docker/daemon.json
+    contents: '{"debug": true}'
+trust:
+  image:
+    - linuxkit/kernel-fedora
+    - linuxkit/binfmt
+    - linuxkit/rngd
+outputs:
+  - format: kernel+initrd
+  - format: iso-bios
+  - format: iso-efi
